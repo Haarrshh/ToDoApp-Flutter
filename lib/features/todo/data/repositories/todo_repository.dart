@@ -79,7 +79,7 @@ class TodoRepository {
     );
     await db.insert(AppConstants.todoTable, todo.toJson());
     if (ConnectivityHelper.isOnline) {
-      // Fire-and-forget remote sync so UI is not blocked by network latency.
+      
       () async {
         try {
           final res = await _api.post(ApiEndpoints.todos, body: todo.toApi());
@@ -90,7 +90,7 @@ class TodoRepository {
             whereArgs: [todo.id],
           );
         } catch (_) {
-          // Keep local todo; it will be synced on the next sync cycle.
+          
         }
       }();
     }

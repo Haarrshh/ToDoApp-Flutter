@@ -41,7 +41,7 @@ class TodoProvider with ChangeNotifier {
           await _repo.loadFromApiAndSave();
           _todos = await _repo.getTodos();
         } catch (_) {
-          // API may be unavailable (e.g. 403); keep empty list, use offline
+          
         }
       }
     } on AppException catch (e) {
