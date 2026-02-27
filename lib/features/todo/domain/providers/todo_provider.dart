@@ -62,7 +62,7 @@ class TodoProvider with ChangeNotifier {
       _todos = await _repo.getTodos();
       notifyListeners();
     } catch (_) {
-      // Sync is best-effort; keep local data, do not show error (e.g. 403)
+      
       notifyListeners();
     }
   }
@@ -70,8 +70,8 @@ class TodoProvider with ChangeNotifier {
   Future<void> addTodo(String title) async {
     _error = null;
     try {
-      await _repo.addTodo(title);
-      _todos = await _repo.getTodos();
+      final created = await _repo.addTodo(title);
+      _todos = [created, ..._todos];
       notifyListeners();
     } on AppException catch (e) {
       _error = e.message;
@@ -82,8 +82,12 @@ class TodoProvider with ChangeNotifier {
   Future<void> toggleComplete(TodoModel todo) async {
     _error = null;
     try {
-      await _repo.updateTodo(todo.copyWith(completed: !todo.completed));
-      _todos = await _repo.getTodos();
+      final updated = await _repo.updateTodo(
+        todo.copyWith(completed: !todo.completed),
+      );
+      _todos = _todos
+          .map((t) => t.id == updated.id ? updated : t)
+          .toList(growable: false);
       notifyListeners();
     } on AppException catch (e) {
       _error = e.message;
@@ -94,8 +98,12 @@ class TodoProvider with ChangeNotifier {
   Future<void> updateTodo(TodoModel todo, String title) async {
     _error = null;
     try {
-      await _repo.updateTodo(todo.copyWith(title: title));
-      _todos = await _repo.getTodos();
+      final updated = await _repo.updateTodo(
+        todo.copyWith(title: title),
+      );
+      _todos = _todos
+          .map((t) => t.id == updated.id ? updated : t)
+          .toList(growable: false);
       notifyListeners();
     } on AppException catch (e) {
       _error = e.message;
@@ -107,7 +115,7 @@ class TodoProvider with ChangeNotifier {
     _error = null;
     try {
       await _repo.deleteTodo(todo.id);
-      _todos = await _repo.getTodos();
+      _todos = _todos.where((t) => t.id != todo.id).toList(growable: false);
       notifyListeners();
     } on AppException catch (e) {
       _error = e.message;

@@ -79,18 +79,20 @@ class TodoRepository {
     );
     await db.insert(AppConstants.todoTable, todo.toJson());
     if (ConnectivityHelper.isOnline) {
-      try {
-        final res = await _api.post(ApiEndpoints.todos, body: todo.toApi());
-        await db.update(
-          AppConstants.todoTable,
-          {'remote_id': res['id'], 'sync_pending': 0},
-          where: 'id = ?',
-          whereArgs: [todo.id],
-        );
-        return todo.copyWith(remoteId: res['id'], syncPending: false);
-      } catch (_) {
-        return todo;
-      }
+      // Fire-and-forget remote sync so UI is not blocked by network latency.
+      () async {
+        try {
+          final res = await _api.post(ApiEndpoints.todos, body: todo.toApi());
+          await db.update(
+            AppConstants.todoTable,
+            {'remote_id': res['id'], 'sync_pending': 0},
+            where: 'id = ?',
+            whereArgs: [todo.id],
+          );
+        } catch (_) {
+          // Keep local todo; it will be synced on the next sync cycle.
+        }
+      }();
     }
     return todo;
   }

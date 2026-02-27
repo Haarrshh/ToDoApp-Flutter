@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/utils/responsive.dart';
+import '../../../../global_components/widgets/brand_splash.dart';
 import '../../../../global_components/widgets/empty_state.dart';
 import '../../../../global_components/widgets/error_view.dart';
-import '../../../../global_components/widgets/loading_indicator.dart';
 import '../../domain/providers/todo_provider.dart';
-import '../widgets/animated_todo_item.dart';
+import '../widgets/todo_tile.dart';
 import 'todo_edit_screen.dart';
 
 class TodoListScreen extends StatelessWidget {
@@ -72,7 +72,10 @@ class TodoListScreen extends StatelessWidget {
       );
     }
     if (provider.loading && provider.todos.isEmpty) {
-      return const LoadingIndicator(key: ValueKey('loading'));
+      return const BrandSplash(
+        key: ValueKey('loading'),
+        subtitle: 'Loading your tasks...',
+      );
     }
     if (provider.todos.isEmpty) {
       return EmptyState(
@@ -94,11 +97,9 @@ class TodoListScreen extends StatelessWidget {
             itemCount: provider.todos.length,
             itemBuilder: (context, index) {
               final todo = provider.todos[index];
-              return AnimatedTodoItem(
+              return TodoTile(
                 key: ValueKey(todo.id),
                 todo: todo,
-                index: index,
-                total: provider.todos.length,
                 onToggle: provider.toggleComplete,
                 onTap: (t) => _openEdit(context, t),
                 onDelete: provider.deleteTodo,
